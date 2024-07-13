@@ -6,9 +6,6 @@ datasources:
     type: prometheus
     access: proxy
     url: http://prometheus:9090
-    database: mydatabase
-    user: grafana
-    password: grafana
     isDefault: true
     jsonData:
       timeInterval: "5s"
