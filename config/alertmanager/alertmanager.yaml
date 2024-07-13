@@ -1,0 +1,15 @@
+route:
+  receiver: slack_prometheus
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1m
+
+receivers:
+    - name: 'slack_prometheus'
+      slack_configs:
+        - send_resolved: true
+          api_url: 'https://hooks.slack.com/services/your-webhook-url'
+          channel: '#your-slack-channel'
+          title: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+          text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"

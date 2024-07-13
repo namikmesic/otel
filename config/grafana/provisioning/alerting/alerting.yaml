@@ -1,0 +1,11 @@
+# /etc/grafana/provisioning/alerting/alerting.yaml
+apiVersion: 1
+
+notifiers:
+  - name: email-notifier
+    type: email
+    uid: email1
+    isDefault: true
+    version: 1
+    settings:
+      addresses: "your-email@example.com"
