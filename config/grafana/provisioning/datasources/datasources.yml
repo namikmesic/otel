@@ -5,10 +5,18 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://localhost:9090
+    url: http://prometheus:9090
     database: mydatabase
     user: grafana
     password: grafana
     isDefault: true
     jsonData:
       timeInterval: "5s"
+
+  - name: Alertmanager
+    type: alertmanager
+    url: http://alertmanager:9093
+    access: proxy
+    jsonData:
+      implementation: prometheus
+      handleGrafanaManagedAlerts: true
