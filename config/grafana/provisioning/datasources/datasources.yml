@@ -17,3 +17,20 @@ datasources:
     jsonData:
       implementation: prometheus
       handleGrafanaManagedAlerts: true
+
+
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: "demo"
+    user: admin
+    secureJsonData:
+      password: admin
+      token: EIUUa7wzdFlvSOE79iTWwqhSO30vkIw289EY6cVyXs5U8SRY1nln36bPf4MHBaA6
+    jsonData:
+      httpMode: GET
+      organization: demo
+      defaultBucket: demo
+      version: Flux
+      withCredentials: true

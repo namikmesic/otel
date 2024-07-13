@@ -23,3 +23,6 @@ go.work.sum
 
 # Testing configurations
 *.testing.yaml
+
+# Cosmtrek Air development local directory
+app/tmp

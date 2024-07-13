@@ -6,23 +6,24 @@ volumes:
   grafana_data: {}
   prometheus_data: {}
   alertmanager_data: {}
+  influxdb_data: {}
 services:
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.53.1
     container_name: prometheus
     restart: unless-stopped
     volumes:
       - ./config/prometheus/:/etc/prometheus/
     command:
-      - '--config.file=/etc/prometheus/prometheus.yaml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=1h'
-      - '--enable-feature=native-histograms'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-      - '--enable-feature=otlp-write-receiver'
-      - '--enable-feature=exemplar-storage'
+      - --web.console.templates=/etc/prometheus/consoles
+      - --web.console.libraries=/etc/prometheus/console_libraries
+      - --storage.tsdb.retention.time=1h
+      - --config.file=/etc/prometheus/prometheus.yaml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+      - --web.route-prefix=/
+      - --enable-feature=exemplar-storage
+      - --enable-feature=otlp-write-receiver
     ports:
       - "9090:9090"
     expose:
@@ -66,7 +67,7 @@ services:
   otelcol:
     image: otel/opentelemetry-collector-contrib
     volumes:
-      - .config/otel/collector.yaml:/etc/otelcol-contrib/config.yaml
+      - ./config/otel/collector.yaml:/etc/otelcol-contrib/config.yaml
     ports:
       - 1888:1888 # pprof extension
       - 8888:8888 # Prometheus metrics exposed by the Collector
@@ -75,3 +76,47 @@ services:
       - 4317:4317 # OTLP gRPC receiver
       - 4318:4318 # OTLP http receiver
       - 55679:55679 # zpages extension
+    expose:
+      - 1888
+      - 8888
+      - 8889
+      - 13133
+      - 4317
+      - 4318
+      - 55679
+    networks:
+      - monitoring
+    depends_on:
+      - influxdb
+      - prometheus
+  app:
+    image: cosmtrek/air
+    working_dir: /app
+    environment:
+      - "OTEL_RESOURCE_ATTRIBUTES=service.name=dice,service.version=0.1.0"
+      - "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4317"
+    ports:
+      - "8080:8080"
+    expose:
+      - 8080
+    volumes:
+      - ./app:/app   
+    networks:
+      - monitoring  
+  influxdb:
+    image: influxdb:latest
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=demo
+      - DOCKER_INFLUXDB_INIT_PASSWORD=VWostV0hbfP4qS7NlzVIsSnTBm93yUcL2Fg0OS9tIhdYSmqGKgqZ2jRrQIvOqXgD
+      - DOCKER_INFLUXDB_INIT_ORG=demo
+      - DOCKER_INFLUXDB_INIT_BUCKET=demo
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=EIUUa7wzdFlvSOE79iTWwqhSO30vkIw289EY6cVyXs5U8SRY1nln36bPf4MHBaA6
+    volumes:
+      - influxdb_data:/var/lib/influxdb2:rw
+    ports:
+      - "8086:8086"
+    expose:
+      - 8086
+    networks:
+      - monitoring

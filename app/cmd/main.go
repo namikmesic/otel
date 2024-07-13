@@ -14,8 +14,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/namikmesic/otel/app/internal/telemetry"
-
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
@@ -54,7 +52,7 @@ func run() (err error) {
 	defer stop()
 
 	// Set up OpenTelemetry.
-	otelShutdown, err := telemetry.setupOTelSDK(ctx)
+	otelShutdown, err := setupOTelSDK(ctx)
 	if err != nil {
 		return
 	}
