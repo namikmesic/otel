@@ -12,15 +12,17 @@ services:
     container_name: prometheus
     restart: unless-stopped
     volumes:
-      - prometheus_data:/prometheus
       - ./config/prometheus/:/etc/prometheus/
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
       - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=1h'
       - '--enable-feature=native-histograms'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
+      - '--enable-feature=otlp-write-receiver'
+      - '--enable-feature=exemplar-storage'
     ports:
       - "9090:9090"
     expose:
@@ -61,3 +63,15 @@ services:
       - 9093
     networks:
       - monitoring
+  otelcol:
+    image: otel/opentelemetry-collector-contrib
+    volumes:
+      - .config/otel/collector.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
